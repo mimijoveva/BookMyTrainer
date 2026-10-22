@@ -21,7 +21,7 @@ export function SlotList({ slots, onBooked }: Props) {
   const upcoming = slots.filter((s) => s.date >= today);
 
   if (upcoming.length === 0) {
-    return <p className="empty">No sessions published yet. Add one in the form to get started.</p>;
+    return <p className="muted">No sessions published yet.</p>;
   }
 
   const byDay = new Map<string, Slot[]>();
@@ -38,15 +38,16 @@ export function SlotList({ slots, onBooked }: Props) {
             {daySlots.map((slot) => {
               const booked = slot.bookedName !== null;
               return (
-                <li key={slot.id} className={`slot d${slot.durationMinutes} ${booked ? 'booked' : ''}`}>
+                <li key={slot.id} className={`slot ${booked ? 'booked' : ''}`}>
                   <div className="slot-row">
                     <span className="time">{slot.startTime.slice(0, 5)}</span>
+                    <span className={`type type-${slot.sessionType.toLowerCase()}`}>{slot.sessionType}</span>
                     <span className="length">{slot.durationMinutes} min</span>
                     {booked ? (
                       <span className="status">Booked</span>
                     ) : (
                       openId !== slot.id && (
-                        <button className="primary" onClick={() => setOpenId(slot.id)}>Book</button>
+                        <button className="link" onClick={() => setOpenId(slot.id)}>Book</button>
                       )
                     )}
                   </div>

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { createSlot } from '../api';
+import { SESSION_TYPES } from '../types';
+import type { SessionType } from '../types';
 
 const DURATIONS = [30, 45, 60, 90];
 
@@ -14,6 +16,7 @@ export function CreateSlotForm({ onCreated }: Props) {
   const [date, setDate] = useState(today);
   const [startTime, setStartTime] = useState('09:00');
   const [durationMinutes, setDurationMinutes] = useState(60);
+  const [sessionType, setSessionType] = useState<SessionType>('Strength');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -22,7 +25,7 @@ export function CreateSlotForm({ onCreated }: Props) {
     setError(null);
     setSaving(true);
     try {
-      await createSlot({ date, startTime, durationMinutes });
+      await createSlot({ date, startTime, durationMinutes, sessionType });
       onCreated();
     } catch (err) {
       setError((err as Error).message);
@@ -32,27 +35,43 @@ export function CreateSlotForm({ onCreated }: Props) {
   }
 
   return (
-    <form className="panel" onSubmit={handleSubmit}>
-      <h2>Add an open session</h2>
+    <form className="create-form" onSubmit={handleSubmit}>
+      <div className="row">
+        <label>
+          Date
+          <input type="date" value={date} min={today} onChange={(e) => setDate(e.target.value)} required />
+        </label>
 
-      <label>
-        Date
-        <input type="date" value={date} min={today} onChange={(e) => setDate(e.target.value)} required />
-      </label>
+        <label>
+          Start time
+          <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
+        </label>
+      </div>
 
-      <label>
-        Start time
-        <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
-      </label>
+      <fieldset>
+        <legend>Session type</legend>
+        <div className="choices">
+          {SESSION_TYPES.map((t) => (
+            <button
+              key={t}
+              type="button"
+              className={`choice ${sessionType === t ? 'selected' : ''}`}
+              onClick={() => setSessionType(t)}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </fieldset>
 
       <fieldset>
         <legend>Duration</legend>
-        <div className="durations">
+        <div className="choices">
           {DURATIONS.map((d) => (
             <button
               key={d}
               type="button"
-              className={`duration d${d} ${durationMinutes === d ? 'selected' : ''}`}
+              className={`choice ${durationMinutes === d ? 'selected' : ''}`}
               onClick={() => setDurationMinutes(d)}
             >
               {d} min
@@ -64,7 +83,7 @@ export function CreateSlotForm({ onCreated }: Props) {
       {error && <p className="error">{error}</p>}
 
       <button type="submit" className="primary" disabled={saving}>
-        {saving ? 'Adding…' : 'Add session'}
+        {saving ? 'Publishing…' : 'Publish session'}
       </button>
     </form>
   );

@@ -1,5 +1,4 @@
-import type { Slot } from './types';
-
+import type { Slot, SessionType } from './types';
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -22,7 +21,12 @@ export function getSlots(): Promise<Slot[]> {
   return request<Slot[]>('/slots');
 }
 
-export function createSlot(input: { date: string; startTime: string; durationMinutes: number }): Promise<Slot> {
+export function createSlot(input: {
+  date: string;
+  startTime: string;
+  durationMinutes: number;
+  sessionType: SessionType;
+}): Promise<Slot> {
   return request<Slot>('/slots', {
     method: 'POST',
     body: JSON.stringify(input),
