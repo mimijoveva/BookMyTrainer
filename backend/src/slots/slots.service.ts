@@ -19,9 +19,15 @@ export class SlotsService {
     });
   }
 
-  create(dto: CreateSlotDto): Promise<Slot> {
-    const slot = this.slotRepo.create(dto);
-    return this.slotRepo.save(slot);
+  async create(dto: CreateSlotDto): Promise<Slot> {
+    try {
+      return await this.slotRepo.save(this.slotRepo.create(dto));
+    } catch (err) {
+      if ((err as { code?: string }).code === '23505') {
+        throw new ConflictException('A session already starts at this date and time');
+      }
+      throw err;
+    }
   }
 
   async book(id: string, dto: BookSlotDto): Promise<{ slot: Slot; confirmationMessage: string }> {

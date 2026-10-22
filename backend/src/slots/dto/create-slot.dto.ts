@@ -1,4 +1,5 @@
 import { IsIn, IsInt, Matches } from 'class-validator';
+import { SESSION_TYPES } from '../slot.entity';
 
 export class CreateSlotDto {
   @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'date must be in YYYY-MM-DD format' })
@@ -10,4 +11,7 @@ export class CreateSlotDto {
   @IsInt()
   @IsIn([30, 45, 60, 90], { message: 'durationMinutes must be 30, 45, 60 or 90' })
   durationMinutes: number;
+
+  @IsIn(SESSION_TYPES, { message: 'sessionType must be Strength, Mobility or Conditioning' })
+  sessionType: string;
 }

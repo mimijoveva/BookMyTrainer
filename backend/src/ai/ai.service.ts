@@ -12,23 +12,19 @@ export class AiService {
     const apiKey = this.config.get<string>('GEMINI_API_KEY');
     if (!apiKey) return this.fallback(slot);
 
-    const model = this.config.get<string>('GEMINI_MODEL') ?? 'gemini-2.5-flash';
+    const model = this.config.get<string>('GEMINI_MODEL') ?? 'gemini-flash-lite-latest';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-
-        const [y, m, d] = slot.date.split('-').map(Number);
-    const day = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-GB', {
-      weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC',
-    });
 
     const prompt = `You are a friendly personal trainer.
 Write a short booking confirmation (2-3 sentences, max 50 words) for your client.
-Mention the day and time, and give one practical tip for preparing for the session.
+Mention the day and time, and give one practical tip for preparing for this type of session.
 Plain text only, no emojis, no signature.
 
 Client name: ${slot.bookedName}
-Date: ${day}
+Date: ${this.formatDay(slot.date)}
 Start time: ${slot.startTime.slice(0, 5)}
-Duration: ${slot.durationMinutes} minutes`;
+Duration: ${slot.durationMinutes} minutes
+Session type: ${slot.sessionType}`;
 
     try {
       const res = await fetch(url, {
@@ -38,7 +34,7 @@ Duration: ${slot.durationMinutes} minutes`;
         signal: AbortSignal.timeout(15000),
       });
 
-      if (!res.ok) throw new Error(`Gemini responded with ${res.status}`);
+      if (!res.ok) throw new Error(`Gemini responded with ${res.status}: ${await res.text()}`);
 
       const data = await res.json();
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
@@ -52,6 +48,14 @@ Duration: ${slot.durationMinutes} minutes`;
   }
 
   private fallback(slot: Slot): string {
-    return `Hi ${slot.bookedName}, your ${slot.durationMinutes}-minute session on ${slot.date} at ${slot.startTime.slice(0, 5)} is confirmed. See you at the gym!`;
+    return `Hi ${slot.bookedName}, your ${slot.durationMinutes}-minute ${slot.sessionType.toLowerCase()} session on ${this.formatDay(slot.date)} at ${slot.startTime.slice(0, 5)} is confirmed. See you at the gym!`;
+  }
+
+  // "2026-10-28" -> "Wednesday 28 October"
+  private formatDay(date: string): string {
+    const [y, m, d] = date.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-GB', {
+      weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC',
+    });
   }
 }

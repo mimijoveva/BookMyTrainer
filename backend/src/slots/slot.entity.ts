@@ -1,8 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Unique } from 'typeorm';
+
+export const SESSION_TYPES = ['Strength', 'Mobility', 'Conditioning'];
 
 @Entity('slots')
+@Unique(['date', 'startTime'])
 export class Slot {
-  @PrimaryGeneratedColumn('uuid') // uuid is not easily guessed, instead of id I will use uuid
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'date' })
@@ -13,6 +16,9 @@ export class Slot {
 
   @Column({ type: 'int' })
   durationMinutes: number;
+
+  @Column({ type: 'varchar', length: 30, default: 'Strength' })
+  sessionType: string;
 
   @Column({ type: 'varchar', nullable: true })
   bookedName: string | null;
