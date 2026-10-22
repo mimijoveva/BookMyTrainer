@@ -4,11 +4,13 @@ import { IsNull, Repository } from 'typeorm';
 import { Slot } from './slot.entity';
 import { CreateSlotDto } from './dto/create-slot.dto';
 import { BookSlotDto } from './dto/book-slot.dto';
+import { AiService } from '../ai/ai.service';
 
 @Injectable()
 export class SlotsService {
   constructor(
     @InjectRepository(Slot) private readonly slotRepo: Repository<Slot>,
+    private readonly aiService: AiService,
   ) {}
 
   findAll(): Promise<Slot[]> {
@@ -22,7 +24,7 @@ export class SlotsService {
     return this.slotRepo.save(slot);
   }
 
-  async book(id: string, dto: BookSlotDto): Promise<Slot> {
+  async book(id: string, dto: BookSlotDto): Promise<{ slot: Slot; confirmationMessage: string }> {
     const result = await this.slotRepo.update(
       { id, bookedName: IsNull() },
       { bookedName: dto.name, bookedEmail: dto.email },
@@ -34,6 +36,8 @@ export class SlotsService {
       throw new ConflictException('This slot has already been booked');
     }
 
-    return this.slotRepo.findOneByOrFail({ id });
+    const slot = await this.slotRepo.findOneByOrFail({ id });
+    const confirmationMessage = await this.aiService.writeConfirmation(slot);
+    return { slot, confirmationMessage };
   }
 }
