@@ -1,4 +1,5 @@
-import type { Slot, SessionType } from './types';
+import type { Slot, CoachSlot, SessionType } from './types';
+
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -19,6 +20,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export function getSlots(): Promise<Slot[]> {
   return request<Slot[]>('/slots');
+}
+
+export function getCoachSlots(): Promise<CoachSlot[]> {
+  return request<CoachSlot[]>('/slots/coach');
 }
 
 export function createSlot(input: {

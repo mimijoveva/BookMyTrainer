@@ -13,10 +13,19 @@ export class SlotsService {
     private readonly aiService: AiService,
   ) {}
 
-  findAll(): Promise<Slot[]> {
-    return this.slotRepo.find({
-      order: { date: 'ASC', startTime: 'ASC' },
-    });
+  // Public list for the booking page: no client names or emails
+  async findAll() {
+    const slots = await this.findOrdered();
+    return slots.map(({ bookedName, bookedEmail, ...slot }) => ({
+      ...slot,
+      booked: bookedName !== null,
+    }));
+  }
+
+  // Full list for the coach view, including who booked
+  async findAllForCoach() {
+    const slots = await this.findOrdered();
+    return slots.map((slot) => ({ ...slot, booked: slot.bookedName !== null }));
   }
 
   async create(dto: CreateSlotDto): Promise<Slot> {
@@ -45,5 +54,9 @@ export class SlotsService {
     const slot = await this.slotRepo.findOneByOrFail({ id });
     const confirmationMessage = await this.aiService.writeConfirmation(slot);
     return { slot, confirmationMessage };
+  }
+
+  private findOrdered(): Promise<Slot[]> {
+    return this.slotRepo.find({ order: { date: 'ASC', startTime: 'ASC' } });
   }
 }

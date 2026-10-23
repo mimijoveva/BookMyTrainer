@@ -12,6 +12,11 @@ export class SlotsController {
     return this.slotsService.findAll();
   }
 
+  @Get('coach')
+  findAllForCoach() {
+    return this.slotsService.findAllForCoach();
+  }
+
   @Post()
   create(@Body() dto: CreateSlotDto) {
     return this.slotsService.create(dto);

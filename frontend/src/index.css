@@ -35,6 +35,7 @@ p { margin: 0; }
 .hero h1 { font-size: clamp(3rem, 10vw, 6rem); font-weight: 800; letter-spacing: -0.015em; }
 .lead { color: var(--dark-muted); font-size: 1.15rem; max-width: 46ch; margin: 18px 0 28px; }
 
+
 .button-light {
   display: inline-block;
   background: var(--dark-text);
@@ -166,6 +167,66 @@ legend { font-weight: 500; padding: 0; margin-bottom: 6px; }
 
 .muted { color: var(--muted); }
 .error { color: var(--error); }
+
+
+/* Filters */
+.filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.filter {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  color: var(--ink);
+}
+.filter.selected { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+/* Week strip */
+.week {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(64px, 1fr);
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 28px;
+  scroll-snap-type: x mandatory;
+}
+.day-pill {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 10px 4px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  scroll-snap-align: start;
+}
+.day-pill .weekday { font-size: 0.8rem; color: var(--muted); }
+.day-pill .daynum { font-family: 'Barlow Condensed', sans-serif; font-size: 1.6rem; font-weight: 700; line-height: 1; }
+.day-pill .count { font-size: 0.75rem; color: var(--muted); }
+.day-pill.empty .daynum { color: var(--muted); }
+.day-pill.selected { background: var(--ink); border-color: var(--ink); color: #fff; }
+.day-pill.selected .weekday, .day-pill.selected .count, .day-pill.selected .daynum { color: #fff; }
+
+.day-title { font-size: 1.4rem; font-weight: 600; margin-bottom: 4px; }
+.slots { list-style: none; margin: 0; padding: 0; }
+
+/* Navigation */
+.nav { background: var(--dark); color: var(--dark-text); }
+.nav-inner { display: flex; justify-content: space-between; align-items: center; padding-top: 20px; padding-bottom: 20px; }
+.nav a { color: inherit; text-decoration: none; }
+.nav a:not(.brand) { font-weight: 500; text-decoration: underline; text-underline-offset: 4px; }
+.brand { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.2rem; }
+.nav-light { background: var(--bg); color: var(--ink); border-bottom: 1px solid var(--line); }
+
+.hero { padding-top: 56px; }
+
+.page-title { font-size: 2.6rem; font-weight: 800; }
+.intro { margin: 6px 0 24px; }
+.section-title { font-size: 2rem; font-weight: 700; margin: 8px 0 20px; }
+
+.week { scrollbar-width: thin; }
 
 /* Mobile */
 @media (max-width: 640px) {

@@ -7,6 +7,11 @@ export interface Slot {
   startTime: string;
   durationMinutes: number;
   sessionType: SessionType;
+  booked: boolean;
+}
+
+// What the coach view receives: the same slot plus who booked it
+export interface CoachSlot extends Slot {
   bookedName: string | null;
   bookedEmail: string | null;
 }

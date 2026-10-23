@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { createSlot } from '../api';
 import { SESSION_TYPES } from '../types';
 import type { SessionType } from '../types';
+import { todayKey } from '../dates';
 
 const DURATIONS = [30, 45, 60, 90];
 
@@ -11,7 +12,7 @@ interface Props {
 }
 
 export function CreateSlotForm({ onCreated }: Props) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayKey();
 
   const [date, setDate] = useState(today);
   const [startTime, setStartTime] = useState('09:00');
