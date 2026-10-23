@@ -15,3 +15,15 @@ export interface CoachSlot extends Slot {
   bookedName: string | null;
   bookedEmail: string | null;
 }
+
+// What the backend returns after a successful booking
+export interface BookingResult {
+  slot: CoachSlot;
+  confirmationMessage: string;
+}
+
+// Gemini's suggestion for which session type fits a client's goal
+export interface SessionSuggestion {
+  sessionType: SessionType;
+  reason: string;
+}

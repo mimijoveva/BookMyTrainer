@@ -1,4 +1,5 @@
-import type { Slot, CoachSlot, SessionType } from './types';
+
+import type { Slot, CoachSlot, SessionType, BookingResult, SessionSuggestion } from './types';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 
@@ -38,12 +39,15 @@ export function createSlot(input: {
   });
 }
 
-export function bookSlot(
-  id: string,
-  input: { name: string; email: string },
-): Promise<{ slot: Slot; confirmationMessage: string }> {
-  return request(`/slots/${id}/book`, {
+export function bookSlot(id: string, input: { name: string; email: string }): Promise<BookingResult> {
+  return request<BookingResult>(`/slots/${id}/book`, {
     method: 'POST',
     body: JSON.stringify(input),
+  });
+}
+export function suggestSession(goal: string): Promise<SessionSuggestion> {
+  return request<SessionSuggestion>('/ai/suggest-session', {
+    method: 'POST',
+    body: JSON.stringify({ goal }),
   });
 }

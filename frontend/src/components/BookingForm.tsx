@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { bookSlot } from '../api';
-import type { Slot } from '../types';
+import type { BookingResult, Slot } from '../types';
 
 interface Props {
   slot: Slot;
-  onBooked: (message: string) => void;
+  onBooked: (result: BookingResult) => void;
   onCancel: () => void;
 }
 
@@ -21,7 +21,7 @@ export function BookingForm({ slot, onBooked, onCancel }: Props) {
     setBooking(true);
     try {
       const result = await bookSlot(slot.id, { name, email });
-      onBooked(result.confirmationMessage);
+      onBooked(result);
     } catch (err) {
       setError((err as Error).message);
       setBooking(false);
@@ -34,7 +34,7 @@ export function BookingForm({ slot, onBooked, onCancel }: Props) {
       <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
       {error && <p className="error">{error}</p>}
       <div className="actions">
-        <button type="button" onClick={onCancel}>Cancel</button>
+        <button type="button" className="link" onClick={onCancel}>Cancel</button>
         <button type="submit" className="primary" disabled={booking}>
           {booking ? 'Booking…' : 'Confirm booking'}
         </button>

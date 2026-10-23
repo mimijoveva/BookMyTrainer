@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { CoachSlot, Slot } from './types';
+import type { BookingResult, CoachSlot, SessionType, Slot } from './types';
 import { getCoachSlots, getSlots } from './api';
-import { CreateSlotForm } from './components/CreateSlotForm';
+import { parseDateKey, todayKey } from './dates';
 import { SlotList } from './components/SlotList';
-import { CoachSchedule } from './components/CoachSchedule';
+import type { TypeFilter } from './components/SlotList';
+import { BookingConfirmation } from './components/BookingConfirmation';
+import { SessionAdvisor } from './components/SessionAdvisor';
+import { About } from './components/About';
+import { CoachView } from './components/CoachView';
 
 const SESSION_INFO = [
   { type: 'strength', name: 'Strength', text: 'Build muscle and learn to lift with good form.' },
@@ -20,7 +24,8 @@ export default function App() {
   const [coachSlots, setCoachSlots] = useState<CoachSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [confirmation, setConfirmation] = useState<string | null>(null);
+  const [confirmation, setConfirmation] = useState<BookingResult | null>(null);
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('All');
 
   const loadSlots = useCallback(async () => {
     try {
@@ -48,80 +53,123 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  function handleBooked(message: string) {
-    setConfirmation(message);
+  // Coming back from the coach view to "#about" or "#schedule": scroll there once the page has rendered
+  useEffect(() => {
+    if (view !== 'book') return;
+    const id = window.location.hash.slice(1);
+    if (id) document.getElementById(id)?.scrollIntoView();
+  }, [view]);
+
+  function handleBooked(result: BookingResult) {
+    setConfirmation(result);
     loadSlots();
   }
 
-  const status = (
-    <>
-      {loading && <p className="muted">Loading sessions…</p>}
-      {loadError && <p className="error">{loadError}</p>}
-    </>
-  );
-  const ready = !loading && !loadError;
+  function showSessionsOfType(type: SessionType) {
+    setTypeFilter(type);
+    document.getElementById('schedule')?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  const nextOpen = slots.filter((s) => !s.booked && s.date >= todayKey()).at(0);
 
   return (
     <>
-      <nav className={`nav ${view === 'coach' ? 'nav-light' : ''}`}>
-        <div className="container nav-inner">
+      <nav className="nav">
+        <div className={`container nav-inner ${view === 'book' ? 'wide' : ''}`}>
           <a className="brand" href="#">BookMyTrainer</a>
-          {view === 'book' ? <a href="#coach">Coach view</a> : <a href="#">Back to booking</a>}
+          {view === 'book' ? (
+            <div className="nav-links">
+              <a href="#schedule">Sessions</a>
+              <a href="#about">About</a>
+              <span className="nav-divider" aria-hidden="true" />
+              <a className="nav-coach" href="#coach">Coach view</a>
+            </div>
+          ) : (
+            <a className="nav-coach" href="#">Back to booking</a>
+          )}
         </div>
       </nav>
 
       {view === 'coach' ? (
-        <main className="schedule">
-          <div className="container">
-            <h2 className="page-title">Coach view</h2>
-            <p className="muted intro">Publish open sessions and see who booked them.</p>
-
-            <CreateSlotForm onCreated={loadSlots} />
-
-            <h2 className="section-title">Your upcoming sessions</h2>
-            {status}
-            {ready && <CoachSchedule slots={coachSlots} />}
-          </div>
-        </main>
+        <CoachView slots={coachSlots} loading={loading} loadError={loadError} onCreated={loadSlots} />
       ) : (
         <>
           <header className="hero">
-            <div className="container">
-              <h1>Train with Coach&nbsp;Ana.</h1>
-              <p className="lead">
-                One-to-one personal training, 30 to 90 minutes. Pick an open time below and it's yours.
-              </p>
-              <a className="button-light" href="#schedule">See open sessions</a>
+            <div className="hero-top">
+              <div className="container wide">
+                <div className="hero-text">
+                  <h1>Train with Coach&nbsp;Ana.</h1>
+                  <p className="lead">
+                    One-to-one personal training, 30 to 90 minutes. Pick an open time below and it's yours.
+                  </p>
+                  <a className="button-light" href="#schedule">See open sessions</a>
 
+                  <p className="next-open">
+                    {nextOpen ? (
+                      <>
+                        Next open session:{' '}
+                        <strong>
+                          {parseDateKey(nextOpen.date).toLocaleDateString('en-GB', {
+                            weekday: 'long', day: 'numeric', month: 'long',
+                          })}
+                          , {nextOpen.startTime.slice(0, 5)}
+                        </strong>
+                        <span className={`type type-${nextOpen.sessionType.toLowerCase()}`}>
+                          {nextOpen.sessionType}
+                        </span>
+                      </>
+                    ) : (
+                      'New sessions are published every week.'
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="hero-media">
+                <img className="hero-photo" src="/hero.jpg" alt="Coach Ana guiding a client through a squat" />
+              </div>
+            </div>
+
+            <div className="container wide">
               <ul className="session-info">
                 {SESSION_INFO.map((s) => (
                   <li key={s.type}>
-                    <span className={`dot type-${s.type}`} aria-hidden="true" />
-                    <div>
-                      <strong>{s.name}</strong>
-                      <p>{s.text}</p>
-                    </div>
+                    <strong className={`type type-${s.type}`}>{s.name}</strong>
+                    <p>{s.text}</p>
                   </li>
                 ))}
               </ul>
             </div>
           </header>
 
-          <main id="schedule" className="schedule">
+          <SessionAdvisor onShowSessions={showSessionsOfType} />
+
+          <main id="schedule" className="section section-schedule">
             <div className="container">
               <h2 className="section-title">Open sessions</h2>
 
               {confirmation && (
-                <div className="confirmation" role="status">
-                  <p>{confirmation}</p>
-                  <button className="link" onClick={() => setConfirmation(null)}>Dismiss</button>
-                </div>
+                <BookingConfirmation result={confirmation} onClose={() => setConfirmation(null)} />
               )}
 
-              {status}
-              {ready && <SlotList slots={slots} onBooked={handleBooked} />}
+              {loading && <p className="muted">Loading sessions…</p>}
+              {loadError && <p className="error">{loadError}</p>}
+              {!loading && !loadError && (
+                <SlotList
+                  slots={slots}
+                  typeFilter={typeFilter}
+                  onTypeFilterChange={setTypeFilter}
+                  onBooked={handleBooked}
+                />
+              )}
             </div>
           </main>
+
+          <About />
+
+          <footer className="footer">
+            <div className="container">BookMyTrainer. Built for the TeamLift internship challenge.</div>
+          </footer>
         </>
       )}
     </>
