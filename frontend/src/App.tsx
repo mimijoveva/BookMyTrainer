@@ -76,7 +76,7 @@ export default function App() {
     <>
       <nav className="nav">
         <div className={`container nav-inner ${view === 'book' ? 'wide' : ''}`}>
-          <a className="brand" href="#">BookMyTrainer</a>
+          <a className="brand" href="#">Trainly</a>
           {view === 'book' ? (
             <div className="nav-links">
               <a href="#schedule">Sessions</a>
